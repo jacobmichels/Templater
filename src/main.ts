@@ -59,6 +59,10 @@ export default class TemplaterPlugin extends Plugin {
         this.templater.functions_generator.teardown();
     }
 
+    onExternalSettingsChange(): void {
+        console.log("onExternalSettingsChange");
+    }
+
     async save_settings(): Promise<void> {
         await this.saveData(this.settings);
         this.editor_handler.updateEditorIntellisenseSetting(this.settings.intellisense_render);
