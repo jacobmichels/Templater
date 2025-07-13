@@ -491,10 +491,20 @@ export class Templater {
             return;
         }
 
+        // if the file is empty, and folder templates are enabled, enter
+        // if the file ie empty, and file (regex) templates are enabled, enter
+        // therefore, if the file has content, we enter the else block, even if the file is not included in a folder/regex rule
+        // this behaviour doesn't seem intentional to me and goes against the documentation of the "trigger templater on new file creation" setting
+        //
+        // "Templater will listen for the new file creation event, and, if it matches a rule you've set, replace every command it finds in the new file's content"
+        //
+        // The above is a lie. if a file already has content, it will be processed by templater, regardless if the file matches a rule or not.
+        // this functionality is probably fine, but it should be documented and we should allow a way to opt-out of this.
         if (
             file.stat.size == 0 &&
             templater.plugin.settings.enable_folder_templates
         ) {
+            console.log("attempting to write template for folder");
             const folder_template_match =
                 templater.get_new_file_template_for_folder(file.parent);
             if (!folder_template_match) {
@@ -532,13 +542,16 @@ export class Templater {
             }
             await templater.write_template_to_file(template_file, file);
         } else {
-            if (file.stat.size <= 100000) {
-                //https://github.com/SilentVoid13/Templater/issues/873
-                await templater.overwrite_file_commands(file);
-            } else {
-                console.log(
-                    `Templater skipped parsing ${file.path} because file size exceeds 10000`
-                );
+            if (file.stat.size > 100000){
+              //https://github.com/SilentVoid13/Templater/issues/873
+              console.log(
+                  `Templater skipped parsing ${file.path} because file size exceeds 10000`,
+              );
+              return;
+            }
+
+            if (!templater.plugin.settings.overwrite_prevention){
+              await templater.overwrite_file_commands(file);
             }
         }
     }

@@ -1,4 +1,4 @@
-import { addIcon, Plugin } from "obsidian";
+import { addIcon, Notice, Plugin } from "obsidian";
 
 import {
     DEFAULT_SETTINGS,
@@ -21,6 +21,8 @@ export default class TemplaterPlugin extends Plugin {
     public editor_handler: Editor;
 
     async onload(): Promise<void> {
+        // https://github.com/SilentVoid13/Templater/issues/1605
+        new Notice("WARN: Templater fork loaded. Remember to maintain it.");
         await this.load_settings();
 
         this.templater = new Templater(this);

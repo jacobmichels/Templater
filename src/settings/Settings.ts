@@ -23,6 +23,7 @@ export const DEFAULT_SETTINGS: Settings = {
     templates_pairs: [["", ""]],
     trigger_on_file_creation: false,
     auto_jump_to_cursor: false,
+    overwrite_prevention: false,
     enable_system_commands: false,
     shell_path: "",
     user_scripts_folder: "",
@@ -43,6 +44,7 @@ export interface Settings {
     templates_pairs: Array<[string, string]>;
     trigger_on_file_creation: boolean;
     auto_jump_to_cursor: boolean;
+    overwrite_prevention: boolean;
     enable_system_commands: boolean;
     shell_path: string;
     user_scripts_folder: string;
@@ -71,6 +73,7 @@ export class TemplaterSettingTab extends PluginSettingTab {
         this.add_auto_jump_to_cursor();
         this.add_trigger_on_new_file_creation_setting();
         if (this.plugin.settings.trigger_on_file_creation) {
+            this.add_overwrite_prevention_setting();
             this.add_folder_templates_setting();
             this.add_file_templates_setting();
         }
@@ -341,6 +344,26 @@ export class TemplaterSettingTab extends PluginSettingTab {
                     this.display();
                 });
         });
+    }
+
+    add_overwrite_prevention_setting(): void {
+        const desc = document.createDocumentFragment();
+        desc.append(
+            "Prevents Templater commands from being rendered when a new file is created that contains commands. This is useful when programmatically creating templates."
+        );
+
+        new Setting(this.containerEl)
+            .setName("Overwrite prevention")
+            .setDesc(desc)
+            .addToggle((toggle) => {
+                toggle
+                    .setValue(this.plugin.settings.overwrite_prevention)
+                    .onChange((overwrite_prevention) => {
+                        this.plugin.settings.overwrite_prevention =
+                            overwrite_prevention;
+                        this.plugin.save_settings();
+                    });
+            });
     }
 
     add_folder_templates_setting(): void {
